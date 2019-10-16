@@ -1,0 +1,5 @@
+#!/bin/bash
+
+grep '<td>.*</td>' | sed 's/^.*<td>//g' | sed 's/<[^>]*>//g' | 
+sed "s/\`/'/g" | tr -s '\n' | tr '[:upper:]' '[:lower:]' | sed '1~2d' | 
+sed 's/[, \?]/\n/g' | tr -s '\n' | sort -u

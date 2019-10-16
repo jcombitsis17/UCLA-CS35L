@@ -1,0 +1,13 @@
+There are 5 main subwindows.
+
+Top Left: Shows names/messages of all commits, as well as a tree structure
+on the left showing the branch structure and including mergepoints.
+
+Top Middle: Shows names of the author of each commit, along with his/her email.
+
+Top Right: Shows date and time of each commit.
+
+Bottom Left: Shows the ChangeLog for the commit. At the top of the ChangeLog, 
+there are links to jump to parent/child commits.
+
+Bottom Right: Shows a list of any/all files that were changed in the commit.

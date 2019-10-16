@@ -1,0 +1,48 @@
+Command: sort --version
+Output said 8.22 (this was to make sure my version was new enough)
+
+Command: od -f -N 64M < /dev/urandom | sed 's/^[0-7]*//'| tr -s ' ' '\n' | 
+         sed '1d' > randfloats.txt
+Used this command to create the file containing 2^24 random floats. -f for
+single-precision floating point, -N to specify number of bytes, and 64M
+because a float is 4 bytes, so we needed to specify 4 * (16 million). The sed
+command was used to get rid of the octal counter in the left column of the 
+output. tr command was used to eliminate white space. Finally sed '1d' deletes
+the first blank line.
+
+Timing:
+Command: time -p sort -g randfloats.txt > /dev/null
+
+Output:
+real 37.74
+user 203.49
+sys 0.81
+
+Command: time -p sort -g --parallel=1 randfloats.txt > /dev/null
+
+Output:
+real 183.52
+user 183.18
+sys 0.32
+
+Command: time -p sort -g --parallel=2 randfloats.txt > /dev/null
+
+Output:
+real 98.58
+user 186.96
+sys 0.54
+
+Command: time -p sort -g --parallel=4 randfloats.txt > /dev/null
+
+Output:
+real 59.20
+user 199.34
+sys 0.81
+
+Command: time -p sort -g --parallel=8 randfloats.txt > /dev/null
+
+Output:
+real 37.25
+user 202.76
+sys 0.84
+

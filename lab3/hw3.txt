@@ -1,0 +1,18 @@
+Q1. The patch worsens the performance because 32 insertions were added, 
+compared to 2 deletions. This results in more instructions for each execution
+of ls -aA.
+
+Q2. The patch gets rid of the if statement in case 'A', so now the option -A
+always sets ignore_mode = IGNORE_DOT_AND_DOTDOT. This could become a problem
+if a user tried to use an option in addition to -A that is not -a. For example
+ls -[option] -A may override something that is not intended to be overwritten.
+
+Q3. IndexError: list index out of range
+This error is raised because randline.py selects random line(s) by creating a
+list containing the file's lines, and accessing a random index. If the file is
+empty, then the list has 0 elements, so any index input will raise IndexError.
+
+Q4. SyntaxError: invalid syntax
+This error is raised because in Python 3, the syntax for the except keyword
+changed, so that commas are no longer valid. Only the format of:
+(except IOError as err) is allowed.

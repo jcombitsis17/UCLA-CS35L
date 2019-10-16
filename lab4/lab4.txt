@@ -1,0 +1,114 @@
+wget https://web.cs.ucla.edu/classes/fall18/cs35L/assign/
+coreutils-with-bug.tar.gz
+Download version of coreutils that has bug
+
+tar -xzf coreutils-with-bug.tar.gz
+Untar/unzip the package
+
+./configure --prefix=$(pwd)/coreutilsInstall
+Configure coreutils
+
+make
+Build current version of coreutils
+-> error: conflicting types for 'futimens'
+
+wget https://web.cs.ucla.edu/classes/fall18/cs35L/assign/coreutils.diff
+Download coreutils renaming patch
+
+patch -p0 < coreutils.diff
+Apply the patch
+
+make
+make install
+Build and install version of coreutils with patch
+
+Reproduce the problem: 
+tmp=$(mktemp -d)
+cd $tmp
+touch -d '1918-11-11 11:00 GMT' wwi-armistice
+touch now
+sleep 1
+touch now1
+TZ=UTC0 ls -lt --full-time wwi-armistice now now1
+
+Output:
+-rw-r--r-- 1 eggert csfac 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 eggert csfac 0 2018-10-29 16:43:16.805404419 +0000 now1
+-rw-r--r-- 1 eggert csfac 0 2018-10-29 16:43:15.801376773 +0000 now
+
+gdb ~/CS35L/lab4/coreutils-with-bug/coreutilsInstall/bin/ls
+Start debugger with patched coreutils version of ls
+
+info functions
+Display all functions
+
+break compare_mtime
+break cmp_mtime
+Set breakpoints at seemingly relevant functions
+(cmp_mtime breakpoint added after first experiment)
+
+r -lt --full-time wwi-armistice now now1
+run ls in gdb with breakpoints
+
+Findings (using s to step and c to continue):
+compare_mtime returns (int diff = a.tv_sec - b.tv_sec) in the timespec_cmp
+function of timespec.h.
+There is possible integer overflow for subtraction, especially if a.tv_sec is 
+very small. In our test case with wwi-armistice, this is most likely the case,
+where the diff value  wraps around and now that date is "in the future".
+So in the patch we need to change timespec.h
+/* Note: upon inspection of timespec.h, a.tv_nsec and b.tv_nsec refer to 
+nanosecond values, so overflow is definitely the problem. */
+
+Navigate back to lab4 directory:
+q
+cd
+cd CS35L/lab4
+
+cp coreutils-with-bug/lib/timespec.h timespec.h
+nano timespec.h
+Copy the timespec.h file so that I can edit it and make the patch
+
+Change the function timespec_cmp:
+timespec_cmp (struct timespec a, struct timespec b)
+{
+  return a.tv_nsec > b.tv_nsec ? 1 : (a.tv_nsec < b.tv_nsec ?
+         -1 : a.tv_nsec - b.tv_nsec);
+}
+
+diff -u coreutils-with-bug/lib/timespec.h timespec.h > lab4.diff
+Make a diff file based on the changes to timespec.h just made
+
+nano lab4.diff
+Add changelog to the top of the diff file
+
+cd coreutils-with-bug
+./configure --prefix=$(pwd)/coreutilsPatched
+make 
+make install
+Configure, build, and install with new patch
+
+Testing the new patch with the same test case as before proves successful.
+Output:
+-rw-r--r-- 1 combitsi eeugrad 0 2018-11-04 02:10:46.539542700 +0000 now
+-rw-r--r-- 1 combitsi eeugrad 0 2018-11-04 02:10:53.399660063 +0000 now1
+-rw-r--r-- 1 combitsi eeugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-
+armistice
+
+Testing on SEASnet:
+touch -d '1918-11-11 11:00 GMT' wwi-armistice
+touch now
+touch now1
+
+Output:
+-rw-r--r-- 1 combitsi eeugrad 0 2054-12-17 17:28:16.000000000 +0000 wwi-
+armistice
+-rw-r--r-- 1 combitsi eeugrad 0 2018-11-04 02:13:28.208354000 +0000 now1
+-rw-r--r-- 1 combitsi eeugrad 0 2018-11-04 02:13:22.170193000 +0000 now
+
+SEASnet outputs 2054 as the year, instead of 1918.
+This is because while the local linux system uses 64 bits where the largest bit
+is a sign bit (past/future), SEASnet uses a 32 bit file system, so the first 
+32 bits get set to 0. This means if the time is too far in the past, i.e. 
+needing 33 or more bits, then the sign bit changes from 1 to 0 on SEASnet, 
+resulting in a time very far in the future.

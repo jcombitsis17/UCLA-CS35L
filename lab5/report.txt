@@ -1,0 +1,171 @@
+*************
+     LAB
+*************
+
+1/2. Wrote the programs tr2b.c and tr2u.c as specified in the lab spec. They
+are similar in that they check for errors in the same way and both read only
+one byte at a time. The program tr2b.c uses getchar() and putchar() for 
+transliteration, while tr2u.c uses read() and write().
+
+Compile the files:
+gcc tr2b.c -o tr2b
+gcc tr2u.c -o tr2u
+
+3.
+Create random file of 5,000,000+ bytes:
+dd if=/dev/urandom of=largefile.txt bs=1048576 count=5
+
+a) Copying one file to another
+Buffered:
+strace -c ./tr2b 'AB' 'XY' < largefile.txt > outputb.txt
+
+Buffered Output:
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 27.68    0.000049           5         9           mmap
+ 17.51    0.000031           8         4           mprotect
+ 12.99    0.000023          12         2           open
+ 11.86    0.000021           5         4           fstat
+  8.47    0.000015           8         2           read
+  8.47    0.000015          15         1           write
+  6.78    0.000012          12         1           munmap
+  4.52    0.000008           4         2           close
+  1.69    0.000003           3         1           arch_prctl
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000177                    29         1 total
+
+Unbuffered:
+strace -c ./tr2u 'AB' 'XY' < largefile.txt > outputu.txt
+
+Unbuffered Output:
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.50   26.428628           5   5242880           write
+ 44.50   21.186354           4   5242882           read
+  0.00    0.000046           7         7           mmap
+  0.00    0.000034           9         4           mprotect
+  0.00    0.000017           9         2           open
+  0.00    0.000011          11         1           munmap
+  0.00    0.000009           9         1         1 access
+  0.00    0.000008           4         2           fstat
+  0.00    0.000007           4         2           close
+  0.00    0.000007           7         1           execve
+  0.00    0.000005           5         1           brk
+  0.00    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   47.615130              10485784         1 total
+
+b) Copying a file to terminal
+Buffered:
+strace -c ./tr2b 'AB' 'XY' < largefile.txt
+
+Buffered Output:
+time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 25.56    0.000034           4         9           mmap
+ 17.29    0.000023           6         4           mprotect
+  9.77    0.000013           7         2           read
+  8.27    0.000011           6         2           open
+  8.27    0.000011          11         1           execve
+  7.52    0.000010           3         4           fstat
+  7.52    0.000010          10         1           munmap
+  6.02    0.000008           8         1           write
+  3.76    0.000005           5         1         1 access
+  3.01    0.000004           2         2           close
+  1.50    0.000002           2         1           brk
+  1.50    0.000002           2         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000133                    29         1 total
+
+Unbuffered:
+strace -c ./tr2u 'AB' 'XY' < largefile.txt
+
+Unbuffered Output:
+time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 56.54   27.782575           5   5242880           write
+ 43.46   21.357792           4   5242882           read
+  0.00    0.000043           6         7           mmap
+  0.00    0.000032           8         4           mprotect
+  0.00    0.000016           8         2           open
+  0.00    0.000011          11         1           munmap
+  0.00    0.000008           4         2           close
+  0.00    0.000007           4         2           fstat
+  0.00    0.000007           7         1         1 access
+  0.00    0.000006           6         1           execve
+  0.00    0.000004           4         1           brk
+  0.00    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   49.140505              10485784         1 total
+
+4.
+Buffered:
+time ./tr2b 'AB' 'XY' < largefile.txt > timetest_b.txt
+
+Buffered Output:
+real	0m0.005s
+user	0m0.002s
+sys	0m0.002s
+
+Unbuffered:
+time ./tr2u 'AB' 'XY' < largefile.txt > timetest_u.txt
+
+Unbuffered Output:
+real	0m18.011s
+user	0m2.008s
+sys	0m15.919s
+
+**************
+   HOMEWORK
+**************
+
+Comparing timing for sfrobu and sfrob:
+* largefile.txt has ~ 5M bytes
+
+Command:
+time ./sfrobu < largefile.txt
+Output:
+real	0m22.888s
+user	0m7.432s
+sys	0m12.192s
+
+Command:
+time ../lab4/sfrob < largefile.txt
+Output:
+real	0m0.040s
+user	0m0.020s
+sys	0m0.006s
+
+sfrob is clearly much faster because it is buffered and uses getchar() and 
+putchar(), while sfrobu is unbuffered, using read() and write().
+
+
+Additional timing comparisons: -f option, and sfrobs
+
+Command:
+time ./sfrobu -f < largefile.txt
+Output:
+real    0m21.415s
+user    0m7.287s
+sys     0m11.767s
+
+Command:
+time ./sfrobs < largefile.txt
+Output:
+real	0m3.588s
+user	0m0.474s
+sys	0m0.196s
+
+Command:
+time ./sfrobs -f < largefile.txt
+Output:
+real	0m2.635s
+user	0m0.482s
+sys	0m0.188s
+
+It is easy to see that the shell script sfrobs runs much faster than sfrobu, 
+although still slower than sfrob. For both sfrobu and sfrobs, the -f option
+causes the program to run slightly faster.

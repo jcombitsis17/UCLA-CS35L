@@ -1,0 +1,11 @@
+********************************************************************************
+NOTE: I had significant troubles in setting up and working with my BeagleBone,
+so I am turning in the parts of this assignment that I believe I am able to do 
+without the BeagleBone (namely hw.txt and hw-pubkey.asc), in order to gain
+partial credit on this assignment. I hope that I can get credit for doing the
+Homework section of the assignment, even though I did not complete (or submit)
+the Lab section.
+
+Thanks, 
+Jordan Combitsis
+********************************************************************************

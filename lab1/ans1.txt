@@ -1,0 +1,53 @@
+1.  Command: man -k [word]
+    Desc: man man, scroll down to EXAMPLES
+
+2.  mv: /usr/bin/mv
+    sh: /usr/bin/sh
+    Commands used: whereis mv, which mv, which sh
+
+3.  ar: creates, modifies, and extracts from archives
+    pr: paginate or columnate FILE(s) for printing
+    tr: translate, squeeze, and/or delete characters from standard input, writing to standard output
+    Commands used: find /usr/bin/ -name ?r, man ar, man pr, man tr
+
+4.  /usr/bin/emacs-24.3
+    Commands used: man readlink, readlink -f /usr/bin/emacs
+
+5.  4.8.5; 4.8.5
+    Commands used: /usr/bin/gcc --version, gcc --version
+
+6.  u+sx: gives user ability to execute, and now sets user ID on execution
+    o-w: removes others' ability to write
+    Commands used: man chmod
+
+7.  find /usr/local/cs -mtime -28
+    Commands used: man find
+
+8.  302
+    Commands used: which find, find /usr/bin/ -type l, man find
+
+9.  tcl8.5/Tix8.4.3/bitmaps/act_fold.gif
+    Commands used: find /usr/lib64 -mtime +1000 -printf "%T+ %p\n" | sort, man find, man sort
+
+10. /usr/lib/locale
+    Commands used: man localedef
+
+11. downcase-region, downcase-word
+    Commands used: C-h a
+
+12. C-M-r: Do incremental search backward for regular expression
+    C-M-s: Do incremental search forward for regular expression
+    C-M-t: Transpose words, but applies to sexps
+    C-M-u: Move backward out of one level of parentheses
+    C-M-v: Scroll next window upward
+    Commands used: C-h k, + each of the above commands
+
+13. C-g: Calls a 'quit' condition (i.e. quits Lisp code, cancels current commands, etc.)
+    Commands used: C-h k, C-g
+
+14. yank works like 'paste', and can be used via C-y
+    Commands used: (ref card), C-h k, C-y
+
+15. On Emacs, everything is listed as root root, but on shell, it is root wheel. Also some dates/numbers are slightly different.
+    Shell commands: cd /usr/bin/, ls -l
+    Emacs commands: M-x, dired, /bin/usr/

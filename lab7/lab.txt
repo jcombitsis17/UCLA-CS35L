@@ -1,0 +1,292 @@
+1. Created file trivial.c with contents:
+
+#include <stdio.h>
+#include <math.h>
+
+int main(void)
+{
+    printf("%.17g", cos(sqrt(3.0)));
+    return 0;
+}
+
+Compiled the file: gcc -o trivial trivial.c
+Run executable: ./trivial
+
+Output: -0.16055653857469052
+
+2. 
+Command: ldd trivial
+Output:
+linux-vdso.so.1 =>  (0x00007ffde4b5c000)
+libc.so.6 => /lib64/libc.so.6 (0x00007f190c60b000)
+/lib64/ld-linux-x86-64.so.2 (0x00007f190c9d8000)
+
+3. 
+Command: strace ./trivial
+Output:
+execve("./trivial", ["./trivial"], [/* 41 vars */]) = 0
+brk(NULL)                               = 0x1261000
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f5f4bdd7000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+open("/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=165806, ...}) = 0
+mmap(NULL, 165806, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f5f4bdae000
+close(3)                                = 0
+open("/lib64/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\340$\2\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=2151832, ...}) = 0
+mmap(NULL, 3981792, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f5f4b7ea000
+mprotect(0x7f5f4b9ad000, 2093056, PROT_NONE) = 0
+mmap(0x7f5f4bbac000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1c2000) = 0x7f5f4bbac000
+mmap(0x7f5f4bbb2000, 16864, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f5f4bbb2000
+close(3)                                = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f5f4bdad000
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f5f4bdab000
+arch_prctl(ARCH_SET_FS, 0x7f5f4bdab740) = 0
+mprotect(0x7f5f4bbac000, 16384, PROT_READ) = 0
+mprotect(0x600000, 4096, PROT_READ)     = 0
+mprotect(0x7f5f4bdd8000, 4096, PROT_READ) = 0
+munmap(0x7f5f4bdae000, 165806)          = 0
+fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 6), ...}) = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f5f4bdd6000
+write(1, "-0.16055653857469052", 20-0.16055653857469052)    = 20
+exit_group(0)                           = ?
++++ exited with 0 +++
+
+The calls related to dynamic linking are ones that have to do with (dynamic)
+memory, such as: access, open, close, fstat, mmap, mprotect, read, and write.
+
+4. 
+Command: ls /usr/bin | awk 'NR%101==004921527%101'
+Output:
+apxs
+cc
+ControlPanel
+db_dump185
+dvipdf
+findsmb
+gifmaker.py
+grub2-mkimage
+happy
+infokey
+kalarm
+kres-migrator
+linux-boot-prober
+memhog
+nepomuk2-rcgen
+numactl
+pamexec
+pbmreduce
+pgmmedian
+pmlogextract
+pod2usage
+pretranslate
+rebuild-jar-repository
+runant.py
+showkey
+svnsync
+timedatectl
+vimdiff
+xliff2oo
+zipcmp
+
+5. Run ldd on each command in above output. 
+Command: ldd /usr/bin/[command]
+If resulted in error, output was: not a dynamic executable
+I believe the error occurs either because (1) it is a script instead of an 
+executable, or (2) it is statically linked (and not dynamically).
+
+6. To get sorted list: 
+Created script sort_commands with contents:
+
+#!/bin/bash
+
+for x in "$(ls /usr/bin | awk 'NR%101==004921527%101' $1)"; do
+  y=`which $x`
+  ldd $y
+done
+
+Final Command: ./sort_commands | grep so | sed 's/[\(\)].*//' | sort -u
+	grep: eliminates unnecessary lines (e.g. "not a dynamic executable")
+	sed: gets rid of addresses at end of each line so that unique sort can
+be used
+
+Output:
+	/lib64/ld-linux-x86-64.so.2 
+	libacl.so.1 => /lib64/libacl.so.1 
+	libakonadi-contact.so.4 => /lib64/libakonadi-contact.so.4 
+	libakonadi-kde.so.4 => /lib64/libakonadi-kde.so.4 
+	libakonadi-kmime.so.4 => /lib64/libakonadi-kmime.so.4 
+	libakonadiprotocolinternals.so.1 => /lib64/libakonadiprotocolinternals.so.1 
+	libapr-1.so.0 => /lib64/libapr-1.so.0 
+	libaprutil-1.so.0 => /lib64/libaprutil-1.so.0 
+	libasyncns.so.0 => /lib64/libasyncns.so.0 
+	libattica.so.0.4 => /lib64/libattica.so.0.4 
+	libattr.so.1 => /lib64/libattr.so.1 
+	libavahi-client.so.3 => /lib64/libavahi-client.so.3 
+	libavahi-common.so.3 => /lib64/libavahi-common.so.3 
+	libbz2.so.1 => /lib64/libbz2.so.1 
+	libcap.so.2 => /lib64/libcap.so.2 
+	libcom_err.so.2 => /lib64/libcom_err.so.2 
+	libcrypto.so.10 => /lib64/libcrypto.so.10 
+	libcrypt.so.1 => /lib64/libcrypt.so.1 
+	libc.so.6 => /lib64/libc.so.6 
+	libdb-5.3.so => /lib64/libdb-5.3.so 
+	libdbus-1.so.3 => /lib64/libdbus-1.so.3 
+	libdbusmenu-qt.so.2 => /lib64/libdbusmenu-qt.so.2 
+	libdevmapper.so.1.02 => /lib64/libdevmapper.so.1.02 
+	libdl.so.2 => /lib64/libdl.so.2 
+	libdw.so.1 => /lib64/libdw.so.1 
+	libelf.so.1 => /lib64/libelf.so.1 
+	libexpat.so.1 => /lib64/libexpat.so.1 
+	libfam.so.0 => /lib64/libfam.so.0 
+	libffi.so.6 => /lib64/libffi.so.6 
+	libFLAC.so.8 => /lib64/libFLAC.so.8 
+	libfontconfig.so.1 => /lib64/libfontconfig.so.1 
+	libfreebl3.so => /lib64/libfreebl3.so 
+	libfreetype.so.6 => /lib64/libfreetype.so.6 
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 
+	libgcrypt.so.11 => /lib64/libgcrypt.so.11 
+	libglib-2.0.so.0 => /lib64/libglib-2.0.so.0 
+	libgmp.so.10 => /lib64/libgmp.so.10 
+	libgnutls.so.28 => /lib64/libgnutls.so.28 
+	libgobject-2.0.so.0 => /lib64/libgobject-2.0.so.0 
+	libgpg-error.so.0 => /lib64/libgpg-error.so.0 
+	libgpm.so.2 => /lib64/libgpm.so.2 
+	libgsm.so.1 => /lib64/libgsm.so.1 
+	libgssapi_krb5.so.2 => /lib64/libgssapi_krb5.so.2 
+	libgthread-2.0.so.0 => /lib64/libgthread-2.0.so.0 
+	libhogweed.so.2 => /lib64/libhogweed.so.2 
+	libHSarray-0.4.0.1-ghc7.6.3.so => /usr/lib64/ghc-7.6.3/array-0.4.0.1/libHSarray-0.4.0.1-ghc7.6.3.so 
+	libHSbase-4.6.0.1-ghc7.6.3.so => /usr/lib64/ghc-7.6.3/base-4.6.0.1/libHSbase-4.6.0.1-ghc7.6.3.so 
+	libHScontainers-0.5.0.0-ghc7.6.3.so => /usr/lib64/ghc-7.6.3/containers-0.5.0.0/libHScontainers-0.5.0.0-ghc7.6.3.so 
+	libHSdeepseq-1.3.0.1-ghc7.6.3.so => /usr/lib64/ghc-7.6.3/deepseq-1.3.0.1/libHSdeepseq-1.3.0.1-ghc7.6.3.so 
+	libHSghc-prim-0.3.0.0-ghc7.6.3.so => /usr/lib64/ghc-7.6.3/ghc-prim-0.3.0.0/libHSghc-prim-0.3.0.0-ghc7.6.3.so 
+	libHSinteger-gmp-0.5.0.0-ghc7.6.3.so => /usr/lib64/ghc-7.6.3/integer-gmp-0.5.0.0/libHSinteger-gmp-0.5.0.0-ghc7.6.3.so 
+	libHSmtl-2.1.2-ghc7.6.3.so => /usr/lib64/ghc-7.6.3/mtl-2.1.2/libHSmtl-2.1.2-ghc7.6.3.so 
+	libHSrts-ghc7.6.3.so => /usr/lib64/ghc-7.6.3/libHSrts-ghc7.6.3.so 
+	libHStransformers-0.3.0.0-ghc7.6.3.so => /usr/lib64/ghc-7.6.3/transformers-0.3.0.0/libHStransformers-0.3.0.0-ghc7.6.3.so 
+	libical.so.1 => /lib64/libical.so.1 
+	libicalss.so.1 => /lib64/libicalss.so.1 
+	libICE.so.6 => /lib64/libICE.so.6 
+	libk5crypto.so.3 => /lib64/libk5crypto.so.3 
+	libkabc.so.4 => /lib64/libkabc.so.4 
+	libkalarmcal.so.2 => /lib64/libkalarmcal.so.2 
+	libkcalcore.so.4 => /lib64/libkcalcore.so.4 
+	libkcal.so.4 => /lib64/libkcal.so.4 
+	libkcalutils.so.4 => /lib64/libkcalutils.so.4 
+	libkcmutils.so.4 => /lib64/libkcmutils.so.4 
+	libkdecore.so.5 => /lib64/libkdecore.so.5 
+	libkdepim.so.4 => /lib64/libkdepim.so.4 
+	libkdeui.so.5 => /lib64/libkdeui.so.5 
+	libkemoticons.so.4 => /lib64/libkemoticons.so.4 
+	libkeyutils.so.1 => /lib64/libkeyutils.so.1 
+	libkholidays.so.4 => /lib64/libkholidays.so.4 
+	libkio.so.5 => /lib64/libkio.so.5 
+	libkldap.so.4 => /lib64/libkldap.so.4 
+	libkmime.so.4 => /lib64/libkmime.so.4 
+	libkpimidentities.so.4 => /lib64/libkpimidentities.so.4 
+	libkpimtextedit.so.4 => /lib64/libkpimtextedit.so.4 
+	libkpimutils.so.4 => /lib64/libkpimutils.so.4 
+	libkrb5.so.3 => /lib64/libkrb5.so.3 
+	libkrb5support.so.0 => /lib64/libkrb5support.so.0 
+	libkresources.so.4 => /lib64/libkresources.so.4 
+	liblber-2.4.so.2 => /lib64/liblber-2.4.so.2 
+	libldap-2.4.so.2 => /lib64/libldap-2.4.so.2 
+	liblz4.so.1 => /lib64/liblz4.so.1 
+	liblzma.so.5 => /lib64/liblzma.so.5 
+	libmagic.so.1 => /lib64/libmagic.so.1 
+	libmailtransport.so.4 => /lib64/libmailtransport.so.4 
+	libmodman.so.1 => /lib64/libmodman.so.1 
+	libm.so.6 => /lib64/libm.so.6 
+	libneon.so.27 => /lib64/libneon.so.27 
+	libnepomukcore.so.4 => /lib64/libnepomukcore.so.4 
+	libnepomukquery.so.4 => /lib64/libnepomukquery.so.4 
+	libnepomuk.so.4 => /lib64/libnepomuk.so.4 
+	libnepomukutils.so.4 => /lib64/libnepomukutils.so.4 
+	libnetpbm.so.11 => /lib64/libnetpbm.so.11 
+	libnettle.so.4 => /lib64/libnettle.so.4 
+	libnsl.so.1 => /lib64/libnsl.so.1 
+	libnspr4.so => /lib64/libnspr4.so 
+	libnss3.so => /lib64/libnss3.so 
+	libnssutil3.so => /lib64/libnssutil3.so 
+	libnuma.so.1 => /lib64/libnuma.so.1 
+	libogg.so.0 => /lib64/libogg.so.0 
+	libp11-kit.so.0 => /lib64/libp11-kit.so.0 
+	libpakchois.so.0 => /lib64/libpakchois.so.0 
+	libpcp.so.3 => /lib64/libpcp.so.3 
+	libpcre.so.1 => /lib64/libpcre.so.1 
+	libperl.so => /usr/lib64/perl5/CORE/libperl.so 
+	libphonon.so.4 => /lib64/libphonon.so.4 
+	libplc4.so => /lib64/libplc4.so 
+	libplds4.so => /lib64/libplds4.so 
+	libpng15.so.15 => /lib64/libpng15.so.15 
+	libproxy.so.1 => /lib64/libproxy.so.1 
+	libpthread.so.0 => /lib64/libpthread.so.0 
+	libpulsecommon-10.0.so => /usr/lib64/pulseaudio/libpulsecommon-10.0.so 
+	libpulse-mainloop-glib.so.0 => /lib64/libpulse-mainloop-glib.so.0 
+	libpulse.so.0 => /lib64/libpulse.so.0 
+	libqca.so.2 => /lib64/libqca.so.2 
+	libQtCore.so.4 => /lib64/libQtCore.so.4 
+	libQtDBus.so.4 => /lib64/libQtDBus.so.4 
+	libQtGui.so.4 => /lib64/libQtGui.so.4 
+	libQtNetwork.so.4 => /lib64/libQtNetwork.so.4 
+	libQtSql.so.4 => /lib64/libQtSql.so.4 
+	libQtSvg.so.4 => /lib64/libQtSvg.so.4 
+	libQtXml.so.4 => /lib64/libQtXml.so.4 
+	libresolv.so.2 => /lib64/libresolv.so.2 
+	librt.so.1 => /lib64/librt.so.1 
+	libsasl2.so.3 => /lib64/libsasl2.so.3 
+	libselinux.so.1 => /lib64/libselinux.so.1 
+	libsepol.so.1 => /lib64/libsepol.so.1 
+	libsmime3.so => /lib64/libsmime3.so 
+	libSM.so.6 => /lib64/libSM.so.6 
+	libsndfile.so.1 => /lib64/libsndfile.so.1 
+	libsolid.so.4 => /lib64/libsolid.so.4 
+	libsopranoclient.so.1 => /lib64/libsopranoclient.so.1 
+	libsoprano.so.4 => /lib64/libsoprano.so.4 
+	libsqlite3.so.0 => /lib64/libsqlite3.so.0 
+	libssl3.so => /lib64/libssl3.so 
+	libssl.so.10 => /lib64/libssl.so.10 
+	libstdc++.so.6 => /lib64/libstdc++.so.6 
+	libstreamanalyzer.so.0 => /lib64/libstreamanalyzer.so.0 
+	libstreams.so.0 => /lib64/libstreams.so.0 
+	libsvn_delta-1.so.0 => /lib64/libsvn_delta-1.so.0 
+	libsvn_fs-1.so.0 => /lib64/libsvn_fs-1.so.0 
+	libsvn_fs_base-1.so.0 => /lib64/libsvn_fs_base-1.so.0 
+	libsvn_fs_fs-1.so.0 => /lib64/libsvn_fs_fs-1.so.0 
+	libsvn_fs_util-1.so.0 => /lib64/libsvn_fs_util-1.so.0 
+	libsvn_ra-1.so.0 => /lib64/libsvn_ra-1.so.0 
+	libsvn_ra_local-1.so.0 => /lib64/libsvn_ra_local-1.so.0 
+	libsvn_ra_neon-1.so.0 => /lib64/libsvn_ra_neon-1.so.0 
+	libsvn_ra_svn-1.so.0 => /lib64/libsvn_ra_svn-1.so.0 
+	libsvn_repos-1.so.0 => /lib64/libsvn_repos-1.so.0 
+	libsvn_subr-1.so.0 => /lib64/libsvn_subr-1.so.0 
+	libsystemd.so.0 => /lib64/libsystemd.so.0 
+	libtasn1.so.6 => /lib64/libtasn1.so.6 
+	libtinfo.so.5 => /lib64/libtinfo.so.5 
+	libudev.so.1 => /lib64/libudev.so.1 
+	libutil.so.1 => /lib64/libutil.so.1 
+	libuuid.so.1 => /lib64/libuuid.so.1 
+	libvorbisenc.so.2 => /lib64/libvorbisenc.so.2 
+	libvorbis.so.0 => /lib64/libvorbis.so.0 
+	libwrap.so.0 => /lib64/libwrap.so.0 
+	libX11.so.6 => /lib64/libX11.so.6 
+	libX11-xcb.so.1 => /lib64/libX11-xcb.so.1 
+	libXau.so.6 => /lib64/libXau.so.6 
+	libxcb.so.1 => /lib64/libxcb.so.1 
+	libXcursor.so.1 => /lib64/libXcursor.so.1 
+	libXext.so.6 => /lib64/libXext.so.6 
+	libXfixes.so.3 => /lib64/libXfixes.so.3 
+	libXft.so.2 => /lib64/libXft.so.2 
+	libXinerama.so.1 => /lib64/libXinerama.so.1 
+	libXi.so.6 => /lib64/libXi.so.6 
+	libxml2.so.2 => /lib64/libxml2.so.2 
+	libXpm.so.4 => /lib64/libXpm.so.4 
+	libXrandr.so.2 => /lib64/libXrandr.so.2 
+	libXrender.so.1 => /lib64/libXrender.so.1 
+	libXtst.so.6 => /lib64/libXtst.so.6 
+	libzip.so.2 => /lib64/libzip.so.2 
+	libz.so.1 => /lib64/libz.so.1 
+	linux-vdso.so.1 =>  
+

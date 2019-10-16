@@ -1,0 +1,24 @@
+1a. Used wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-8.29.tar.xz, 
+wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-8.29.tar.xz.sig, and
+wget https://ftp.gnu.org/gnu/gnu-keyring.gpg to download all necessary assets.
+
+1b. Used the given gpg command to verify the Coreutils signature. Success: 
+output read "Good signature..."
+
+2. Ran tar -xf coreutils-8.29.tar.xz to extract contents from tarball. Within
+the coreutils directory, created temporary directory coreutilsInstall. Ran
+./configure --prefix=$(pwd)/coreutilsInstall, and then make install to compile
+and install Coreutils into the temporary directory.
+
+3. To reproduce the bug with the unmodified version of coreutils, used 
+cd coreutilsInstall/bin to locate the ls executable. Then ran ./ls -a -A and
+observed how the output incorrectly includes '.' and '..'.
+
+4. Copied the patch into a file named patch_file, then ran the command
+patch -p1 < patch_file (-p0 option didn't work) to apply the patch.
+
+5. Ran the command make in order to build the fixed version of ls.
+
+6. Confirmed that the modified ls works by testing ./ls -a -A in both the
+coreutils-8.29/src (fixed) and coreutilsInstall/bin (unmodified) directories,
+and noting how the first option hides the '.' and '..' listing from ls output.

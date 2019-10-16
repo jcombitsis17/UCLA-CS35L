@@ -1,0 +1,56 @@
+Command: locale
+Displayed current locale settings (incorrect, i.e. did not show LC_ALL="C")
+
+Command: export LC_ALL='C'
+Given command to change settings to standard C locale
+
+Command: locale
+Now printed out correct settings (all elements contain ="C")
+
+Command: sort --output=words /usr/share/dict/words
+Sorted the contents of the given file, and put the result into a new file in working directory, called words
+
+Command: wget https://web.cs.ucla.edu/classes/fall18/cs35L/assign/assign2.html
+Downloaded the contents of the assignment webpage into a new file in my working directory
+
+Command: tr -c 'A-Za-z' '[\n*]' < assign2.html
+Translated all alphabetical characters to output
+
+Command: tr -cs 'A-Za-z' '[\n*]' < assign2.html
+Gets rid of blank spaces (i.e. when there's multiple '[\n*]' in a row)
+
+Command: tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort
+Sorts all of the words (output of the previous command)
+
+Command: tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u
+Gets rid of duplicate words
+
+Command: tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u | comm - words
+Outputs 3 columns (lines only in assign2.html; lines only in words; lines in both)
+
+Command: tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u | comm -23 - words
+Only outputs column 1 (lines only in assign2.html)
+
+Command: wget mauimapp.com/moolelo/hwnwdseng.htm
+Downloaded all contents of the Hawaiian words webpage
+
+Command: grep '<td>.*</td>' hwnwdseng.htm | sed 's/^.*<td>//g' | sed 's/<[^>]*>//g' | 
+sed "s/\`/'/g" | tr -s '\n' | tr '[:upper:]' '[:lower:]' | sed '1~2d' | 
+sed 's/[, \?]/\n/g' | tr -s '\n' | sort -u > hwords
+Extracts all Hawaiian words, makes necessary adjustments (e.g. sorting), and puts
+them into a new file called hwords
+
+buildwords script:
+
+#!/bin/bash
+
+grep '<td>.*</td>' | sed 's/^.*<td>//g' | sed 's/<[^>]*>//g' |
+sed "s/\`/'/g" | tr -s '\n' | tr '[:upper:]' '[:lower:]' | sed '1~2d' |
+sed 's/[, \?]/\n/g' | tr -s '\n' | sort -u
+
+Command: chmod a+x buildwords
+Allows all users to execute buildwords
+
+Hawaiian spelling checker command: tr '[:upper:]' '[:lower:]' < assign2.html | 
+tr -cs "pk'mnwlhaeiou" '[\n*]' | sort -u | comm -23 - hwords
+Prints all misspelled Hawaiian words found in assign2.html file

@@ -1,0 +1,122 @@
+1. Maintain a file hw9.txt
+
+touch hw9.txt
+nano hw9.txt
+
+2. Check out Diffutils v3.0 from your repository, into a new branch, 'quote'.
+
+git checkout -b quote v3.0
+
+Output:
+M	src/cmp.c
+M	src/diff.c
+M	src/diff3.c
+M	src/dir.c
+M	src/sdiff.c
+M	src/util.c
+Switched to a new branch 'quote'
+
+3. Install your change into this new branch.
+
+patch -p1 < quote-3.0-patch.txt
+
+4. Read about Emacs function add-change-log-entry-other-window.
+
+5. Make a ChangeLog entry for the patch.
+
+For each of the 6 files:
+emacs [filename]
+C-x 4 a
+(Document changes to file in the ChangeLog)
+
+6. Commit changes to the new branch (using the ChangeLog).
+
+git add .
+git commit -F ChangeLog
+
+Output:
+[quote c2ae1b6] 2018-12-07  Jordan Alexander Combitsis  <combitsi@lnxsrv09.seas.ucla.edu>
+ Committer: Jordan Alexander Combitsis <combitsi@lnxsrv09.seas.ucla.edu>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 14 files changed, 694 insertions(+), 43 deletions(-)
+ create mode 100644 diffutils-gets.diff
+ create mode 100644 quote-3.0-patch.txt
+ create mode 100644 src/cmp.c.rej
+ create mode 100644 src/diff.c.rej
+ create mode 100644 src/diff3.c.rej
+ create mode 100644 src/dir.c.rej
+ create mode 100644 src/sdiff.c.rej
+ create mode 100644 src/util.c.rej
+
+7. Generate a new patch file (that should work without fixing by hand).
+
+git format-patch -1 --stdout > formatted-patch.txt
+
+8. Verify that partner's patch works.
+
+git checkout -b partner v3.0
+git am partner_patch.txt
+
+Repeat lab9.txt Step 13:
+./bootstrap
+wget https://web.cs.ucla.edu/classes/fall18/cs35L/assign/diffutils-gets.diff
+patch -p0 < diffutils-gets.diff
+./configure
+make
+make check
+
+Confirmed that partner's patch works using ./src/diff . - and ./src/diff --help
+
+9. Verify that the ChangeLog entry works.
+
+make distdir
+cd diffutils-3.0.1-c2ae
+emacs ChangeLog
+
+The first entry in the ChangeLog is mine, so it works.
+
+2018-12-07  Jordan Alexander Combitsis  <combitsi@lnxsrv09.seas.ucla.edu>
+
+        2018-12-07  Jordan Alexander Combitsis  <combitsi@lnxsrv09.seas.ucla.ed\
+u>
+                * src/util.c: Changed all accents ` to apostrophes ' in charact\
+er string constants.
+
+                * src/sdiff.c: Changed all accents ` to apostrophes ' in charac\
+ter string constants.
+
+                * src/dir.c: Changed all accents ` to apostrophes ' in characte\
+r string constants.
+
+                * src/diff3.c: Changed all accents ` to apostrophes ' in charac\
+ter string constants.
+
+                * src/diff.c: Changed all accents ` to apostrophes ' in charact\
+er string constants.
+
+                * src/cmp.c: Changed all accents ` to apostrophes ' in characte\
+r string constants.
+
+10. Take a screenshot gitk-screenshot.png of your view of the mergepoint.
+
+Downloaded XQuartz, then ran it and opened a terminal window (within XQuartz).
+Then:
+
+ssh -Y combitsi@lnxsrv09.seas.ucla.edu
+(enter password)
+cd ~eggert/src/gnu/emacs
+export PATH=/usr/local/cs/bin:$PATH
+gitk
+
+A new window opens in XQuartz. From here I can scroll to find and screenshot 
+the appropriate mergepoint ("Merge branch 'master' into xwidget").

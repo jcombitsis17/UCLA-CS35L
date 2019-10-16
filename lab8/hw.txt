@@ -1,0 +1,26 @@
+1. The network would still be secure because the data is first encrypted with
+the receiver's public key, and then decrypted using the receiver's private key.
+Other teams would be able to see the encrypted version of the messages, but
+they do not have access to the private key and therefore cannot decrypt any of
+the messages.
+
+    (1) If the other teams were able to obtain our team's keystrokes during the
+session, the network would not be secure anymore because using the keystrokes,
+they could figure out our passphrase, which would give them a private key, and
+therefore the ability to decrypt all of our data.
+
+    (2) If other teams had physical control of the USB, the network would not 
+be secure because having the USB drive would give them access to everything,
+including the private key data.
+
+2. The gpg2 --verify command doesn't really verify that you personally created
+the file(s) because this command simply compares the cleartext signature,
+which is after decryption, to the decrypted data using a public key. So it is
+easy for someone to intercept the data, change the data, and sign the data
+him/herself, along with his/her own public key. In this case, gpg2 --verify 
+will simply show that the "interceptor" is the sender of the file, when this is
+not actually the case.
+   The best way to fix this problem is to trust a third party that can keep a 
+record of the original file(s) and its author. Oftentimes, third party's will
+use some sort of certificate to ensure proper verification. This way we will 
+know if the data has changed before reaching the receiver.
